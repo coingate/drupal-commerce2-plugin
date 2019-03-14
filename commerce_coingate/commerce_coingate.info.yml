@@ -1,0 +1,7 @@
+name: Commerce CoinGate
+type: module
+description: Provides Commerce integration for the CoinGate Payment Gateway.
+core: 8.x
+package: Commerce (custom)
+dependencies:
+  - commerce:commerce_payment
