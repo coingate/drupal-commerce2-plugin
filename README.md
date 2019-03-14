@@ -16,7 +16,7 @@ Also note, that *Receive Currency* parameter in your plugin configuration window
 
 ### via FTP 
 
-1. Download <>
+1. Download <https://github.com/coingate/drupal-commerce2-plugin/releases/download/v1.0.0/Commerce_CoinGate.zip>
 
 2. Unzip and upload **commerce_coingate** directory to **/web/modules/custom/**. If directory **custom** does not exist in **modules** you can create it.
 
