@@ -117,19 +117,13 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
 
     public function onReturn(OrderInterface $order, Request $request)
     {
-        if ($this->checkCallbackExist($order) !== true) {
+        
 
-            throw new PaymentGatewayException("There was a problem with your request please contact merchant.");
-        }
     }
 
     public function onCancel(OrderInterface $order, Request $request)
     {
-        $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
-        $payment = $payment_storage->load($order->id());
-        $payment->setRemoteState('canceled');
-        $payment->setState('canceled');
-        $payment->save();
+        
     }
 
     public function onNotify(Request $request)
@@ -240,13 +234,6 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
         }
     }
 
-    private function checkCallbackExist(OrderInterface $order)
-    {
-        $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
-        $payment = $payment_storage->load($order->id());
-
-        return $payment->getRemoteState() !== null ? true : false;
-    }
 
     private function getReceiveCurrencyValue($value)
     {
