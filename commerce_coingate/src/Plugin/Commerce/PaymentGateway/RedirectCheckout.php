@@ -117,13 +117,15 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
 
     public function onReturn(OrderInterface $order, Request $request)
     {
-
+        /// Status updated on onNotify()
     }
+
 
     public function onCancel(OrderInterface $order, Request $request)
     {
-
+        /// Status updated on onNotify()
     }
+
 
     public function onNotify(Request $request)
     {
@@ -185,6 +187,8 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
             $payment->setRemoteState($coingateOrder->status);
 
             $payment->save();
+
+            $this->onReturn( $payment->getOrder(), $request);
         }
     }
 
