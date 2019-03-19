@@ -117,13 +117,12 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
 
     public function onReturn(OrderInterface $order, Request $request)
     {
-        
 
     }
 
     public function onCancel(OrderInterface $order, Request $request)
     {
-        
+
     }
 
     public function onNotify(Request $request)
@@ -145,41 +144,48 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
             $status = $coingateOrder->status;
         }
 
-        switch ($status) {
-            case 'paid':
-                $status = 'Completed';
-                break;
-            case 'pending':
-                $status = "Pending";
-                break;
-            case 'invalid':
-                $status = "Voided";
-                break;
-            case 'expired':
-                $status = "Expired";
-                break;
-            case 'canceled':
-                $status = "Cancelled";
-                break;
-            case 'refunded':
-                $status = "Refunded";
-                break;
-            case 'new':
-                $status = "New";
-                break;
-            case 'confirming':
-                $status = "Pending";
-                break;
+        if (!is_null($status)) {
+
+            /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
+            $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
+            $payment = $payment_storage->load($callback['order_id']);
+
+            switch ($status) {
+                case 'paid':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('authorize_capture');
+                    break;
+                case 'pending':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('authorize');
+                    break;
+                case 'invalid':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('void');
+                    break;
+                case 'expired':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('expire');
+                    break;
+                case 'canceled':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('void');
+                    break;
+                case 'refunded':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('refund');
+                    break;
+                case 'new':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('authorize');
+                    break;
+                case 'confirming':
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('authorize');
+                    break;
+                default:
+                    $payment_transition = $payment->getState()->getWorkflow()->getTransition('authorize');
+                    break;
+            }
+
+            $payment->getState()->applyTransition($payment_transition);
+            $payment->setRemoteId($coingateOrder->id);
+            $payment->setRemoteState($coingateOrder->status);
+
+            $payment->save();
         }
-
-        $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
-        $payment = $payment_storage->load($callback['order_id']);
-
-        $payment->getState();
-        $payment->setRemoteId($coingateOrder->id);
-        $payment->setRemoteState($coingateOrder->status);
-        $payment->setState($status);
-        $payment->save();
     }
 
 
@@ -203,6 +209,7 @@ class RedirectCheckout extends OffsitePaymentGatewayBase implements RedirectChec
         ]);
 
         $payment->save();
+
 
         $configuration = $this->getConfiguration();
 
